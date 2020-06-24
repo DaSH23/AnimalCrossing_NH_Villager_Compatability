@@ -13,8 +13,17 @@ from compatability import *
 # 		print (villagers[index]['Name'])
 # get_score_submatrix(['Tammy','Stitches','Chester','Nate','Charlise','Barold'])
 
-print (name_to_index('Tammy'))
-find_threshold_best_left(['Tammy'], 10)
+# print (name_to_index('Tammy'))
+names = ['Sylvana','Maple','Zell','Beardo']
+indexes = [name_to_index(name) for name in names]
+best_left_indexes = find_threshold_best_left(names, threshold=10, switch=1, between_score_threshold=8)
+for best_left in best_left_indexes:
+    ten = indexes + best_left
+    temp = [index_to_name(index) for index in ten]
+    score_submatrix = get_score_submatrix(temp)
+    between_score_submatrix = score_submatrix[np.ix_(range(len(names)),range(len(names),10))]
+    print (temp[len(names):], between_score_submatrix.min())
+    print (score_submatrix[np.ix_(range(len(names)),range(len(names),10))])
 
 # i1 = name_to_index('Boris')
 # i2 = name_to_index('Eugene')

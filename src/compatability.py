@@ -115,16 +115,16 @@ def find_threshold_best_ten(threshold: int):
 	if threshold < 10:
 		print ("Why the fuck setting your threshold that low? Return -1.")
 		return -1
+
 	def generate_threshold_score_matrix():
 		size = len(villagers)
 		threshold_score_matrix = np.zeros((size,size))
-
 		for i in range(size):
 			for j in range(size):
 				if score_matrix[i][j] >= threshold:
 					threshold_score_matrix[i][j] = score_matrix[i][j]
-
 		return threshold_score_matrix
+		
 	threshold_score_matrix = generate_threshold_score_matrix()
 	threshold_graph = nx.from_numpy_matrix(threshold_score_matrix, False)
 	# nx.draw_networkx(threshold_graph, pos=nx.spring_layout(threshold_graph), with_labels = False, node_size = 10)
@@ -136,7 +136,7 @@ def find_threshold_best_ten(threshold: int):
 	# print (best_ten_indexes)
 	return best_ten_indexes
 
-def find_threshold_best_left(names: list, threshold: int):
+def find_threshold_best_left(names: list, threshold: int, switch: int, between_score_threshold= 3):
 	score_matrix = generate_score_matrix()
 
 	size = len(names)
@@ -150,10 +150,10 @@ def find_threshold_best_left(names: list, threshold: int):
 		if not check_index(index):
 			print ("Some of your name is not found in data! Return -1.")
 			return -1
-	def generate_threshold_score_matrix():
+	# optimize both compatability within 10-x group and between 10-x and x
+	def generate_threshold_score_matrix_0():
 		size = len(villagers)
 		threshold_score_matrix = np.zeros((size,size))
-
 		for i in range(size):
 			for j in range(size):
 				if i in indexes and j in indexes:
@@ -162,21 +162,56 @@ def find_threshold_best_left(names: list, threshold: int):
 					threshold_score_matrix[i][j] = score_matrix[i][j]
 				else:
 					continue
-
 		return threshold_score_matrix
-	threshold_score_matrix = generate_threshold_score_matrix()
-	threshold_graph = nx.from_numpy_matrix(threshold_score_matrix, False)
-	candidates = [s for s in nx.find_cliques(threshold_graph) if len(s) == 10]
-	if not candidates:
-		print ("Seems you set your threshold too high! Nothing found, return -1.")
-		return -1
-	for candidate in candidates:
-		# print (indexes)
-		# print (candidate)
-		if issublist(indexes, candidate):
-			print (candidate)
-			names = [index_to_name(index) for index in candidate]
-			print (get_score_submatrix(names))
+	# optimize only compatability within 10-x group
+	def generate_threshold_score_matrix_1():
+		size = len(villagers)
+		threshold_score_matrix = np.zeros((size,size))
+		for i in range(size):
+			for j in range(size):
+				if score_matrix[i][j] >= threshold:
+					if not i in indexes or not j in indexes:
+						threshold_score_matrix[i][j] = score_matrix[i][j]
+		return threshold_score_matrix
+
+	if switch == 0:
+		threshold_score_matrix = generate_threshold_score_matrix_0()
+		threshold_graph = nx.from_numpy_matrix(threshold_score_matrix, False)
+		candidates = [s for s in nx.find_cliques(threshold_graph) if len(s) == 10]
+		if not candidates:
+			print ("Either threshold is too high or your villagers are too many! Nothing found, return -1.")
+			return -1
+		best_left_indexes = []
+		for candidate in candidates:
+			if issublist(indexes, candidate):
+				best_left_indexes.append(candidate)
+				temp = [index_to_name(index) for index in candidate]
+				# print (temp)
+				# print (get_score_submatrix(temp))
+		return best_left_indexes
+	elif switch == 1:
+		threshold_score_matrix = generate_threshold_score_matrix_1()
+		threshold_graph = nx.from_numpy_matrix(threshold_score_matrix, False)
+		candidates = [s for s in nx.find_cliques(threshold_graph) if len(s) == 10-len(names)]
+		if not candidates:
+			print ("Seems your threshold is set too high! Nothing found, return -1.")
+			return -1
+		best_left_indexes = []
+		for candidate in candidates:
+			best_ten_candidate = indexes + candidate
+			temp = [index_to_name(index) for index in best_ten_candidate]
+			score_submatrix = get_score_submatrix(temp)
+			between_score_submatrix = score_submatrix[np.ix_(range(len(names)),range(len(names),10))]
+			for between_score in range(threshold, between_score_threshold-1 , -1):
+				if between_score_submatrix.min() >= between_score:
+					best_left_indexes.append(candidate)
+					# print (temp[len(names):], between_score)
+					# print (score_submatrix[np.ix_(range(len(names)),range(len(names),10))])
+					break	
+		return best_left_indexes
+	else:
+		print ("You do not have that many options! Return -1.")
+		return -1	
 
 # --------------------------- Aborted ---------------------------
 def find_overall_best_ten():
