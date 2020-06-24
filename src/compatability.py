@@ -88,7 +88,7 @@ def get_score_submatrix(names: list):
 	for i in range(size):
 		for j in range(size):
 			score_submatrix[i][j] = score_matrix[indexes[i]][indexes[j]]
-	print (score_submatrix)
+	# print (score_submatrix)
 	return score_submatrix
 
 def find_best_pair():
@@ -106,7 +106,7 @@ def find_best_pair():
 			best_pair_indexes.append({row_indexes[i],column_indexes[i]})
 		else:
 			continue
-	print (best_pair_indexes)
+	# print (best_pair_indexes)
 	return best_pair_indexes
 
 def find_threshold_best_ten(threshold: int):
@@ -126,25 +126,60 @@ def find_threshold_best_ten(threshold: int):
 
 		return threshold_score_matrix
 	threshold_score_matrix = generate_threshold_score_matrix()
-	np.savetxt('threshold_score_matrix.csv', threshold_score_matrix, delimiter=',', fmt='%d')
-
 	threshold_graph = nx.from_numpy_matrix(threshold_score_matrix, False)
-	nx.draw_networkx(threshold_graph, pos=nx.spring_layout(threshold_graph), with_labels = False, node_size = 10)
-	plt.show()
-	# print ([s for s in nx.enumerate_all_cliques(threshold_graph) if len(s) == 10])
+	# nx.draw_networkx(threshold_graph, pos=nx.spring_layout(threshold_graph), with_labels = False, node_size = 10)
+	# plt.show()
+	best_ten_indexes = [s for s in nx.find_cliques(threshold_graph) if len(s) == 10]
+	if not best_ten_indexes:
+		print ("Seems you set your threshold too high! Nothing found, return -1.")
+		return -1
+	# print (best_ten_indexes)
+	return best_ten_indexes
 
-# --------------------------- TODO ---------------------------
+def find_threshold_best_left(names: list, threshold: int):
+	score_matrix = generate_score_matrix()
+
+	size = len(names)
+	if size >= 10:
+		print ("WTF, you already had 10 chosen villagers? Return -1.")
+		return -1
+	if size == 0:
+		return find_threshold_best_ten(threshold)
+	indexes = [name_to_index(name) for name in names]
+	for index in indexes:
+		if not check_index(index):
+			print ("Some of your name is not found in data! Return -1.")
+			return -1
+	def generate_threshold_score_matrix():
+		size = len(villagers)
+		threshold_score_matrix = np.zeros((size,size))
+
+		for i in range(size):
+			for j in range(size):
+				if i in indexes and j in indexes:
+					threshold_score_matrix[i][j] = threshold
+				elif score_matrix[i][j] >= threshold:
+					threshold_score_matrix[i][j] = score_matrix[i][j]
+				else:
+					continue
+
+		return threshold_score_matrix
+	threshold_score_matrix = generate_threshold_score_matrix()
+	threshold_graph = nx.from_numpy_matrix(threshold_score_matrix, False)
+	candidates = [s for s in nx.find_cliques(threshold_graph) if len(s) == 10]
+	if not candidates:
+		print ("Seems you set your threshold too high! Nothing found, return -1.")
+		return -1
+	for candidate in candidates:
+		# print (indexes)
+		# print (candidate)
+		if issublist(indexes, candidate):
+			print (candidate)
+			names = [index_to_name(index) for index in candidate]
+			print (get_score_submatrix(names))
+
+# --------------------------- Aborted ---------------------------
 def find_overall_best_ten():
 	overall_best_ten_indexes = []
 	return overall_best_ten_indexes
-
-def find_best_left(names: list):
-	best_left_indexes = []
-	return best_left_indexes
-
-# score_matrix = generate_score_matrix()
-# np.savetxt('score_matrix.csv', score_matrix, delimiter=',', fmt='%d')
-
-# find_best_pair()
-# get_score_submatrix(['Sylvana','Maple','Zell','Beardo','sdad'])
-find_threshold_best_ten(13)
+# --------------------------- Aborted ---------------------------

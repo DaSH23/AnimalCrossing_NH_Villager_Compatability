@@ -25,5 +25,11 @@ def name_to_index(name: str):
     print ("Name not found in data! Return -1.")
     return -1
 
+def index_to_name(index: int):
+    return villagers[index]['Name']
+
 def check_index(index: int):
     return index != -1 and index <= 391
+
+def issublist(l1: list, l2: list):
+    return set(l1) <= set(l2)
