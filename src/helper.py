@@ -10,6 +10,7 @@ def load_json(filepath: str):
     return json_data
 
 villagers = load_json("data/acnh.json")
+SIZE = len(villagers)
 # print (villagers)
 score_dict = { '♥': 5, '♦': 3, '♣': 2, '×': 1 }
 

@@ -14,9 +14,9 @@ from compatability import *
 # get_score_submatrix(['Tammy','Stitches','Chester','Nate','Charlise','Barold'])
 
 # print (name_to_index('Tammy'))
-names = ['Sylvana','Maple','Zell','Beardo']
+names = ['Mitzi','Olaf','Pango','Roald','Tybalt','Tipper','Renée','Nate','Stitches']
 indexes = [name_to_index(name) for name in names]
-best_left_indexes = find_threshold_best_left(names, threshold=10, switch=1, between_score_threshold=8)
+best_left_indexes = find_threshold_best_left(names, threshold=8, switch=1, between_score_threshold=8)
 for best_left in best_left_indexes:
     ten = indexes + best_left
     temp = [index_to_name(index) for index in ten]

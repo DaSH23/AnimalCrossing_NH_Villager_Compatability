@@ -58,10 +58,9 @@ def star_sign_compatability(sign1: str, sign2: str):
 		return '♦'
 
 def generate_score_matrix():
-	size = len(villagers)
-	score_matrix = np.zeros((size,size))
-	for i in range(size):
-		for j in range(size):
+	score_matrix = np.zeros((SIZE,SIZE))
+	for i in range(SIZE):
+		for j in range(SIZE):
 			if not i == j:
 				score = score_to_int(personality_compatability(villagers[i]['Personality'],villagers[j]['Personality']))\
 					+ score_to_int(species_compatability(villagers[i]['Species'],villagers[j]['Species']))\
@@ -117,10 +116,9 @@ def find_threshold_best_ten(threshold: int):
 		return -1
 
 	def generate_threshold_score_matrix():
-		size = len(villagers)
-		threshold_score_matrix = np.zeros((size,size))
-		for i in range(size):
-			for j in range(size):
+		threshold_score_matrix = np.zeros((SIZE,SIZE))
+		for i in range(SIZE):
+			for j in range(SIZE):
 				if score_matrix[i][j] >= threshold:
 					threshold_score_matrix[i][j] = score_matrix[i][j]
 		return threshold_score_matrix
@@ -136,26 +134,37 @@ def find_threshold_best_ten(threshold: int):
 	# print (best_ten_indexes)
 	return best_ten_indexes
 
-def find_threshold_best_left(names: list, threshold: int, switch: int, between_score_threshold= 3):
+def find_threshold_best_left(names: list, threshold: int, switch: int, between_score_threshold=3):
 	score_matrix = generate_score_matrix()
 
 	size = len(names)
+	if size == 0:
+		return find_threshold_best_ten(threshold)
 	if size >= 10:
 		print ("WTF, you already had 10 chosen villagers? Return -1.")
 		return -1
-	if size == 0:
-		return find_threshold_best_ten(threshold)
+
 	indexes = [name_to_index(name) for name in names]
 	for index in indexes:
 		if not check_index(index):
 			print ("Some of your name is not found in data! Return -1.")
 			return -1
+	# if you have 9 villagers 
+	if size == 9:
+		best_left_indexes = []
+		for i in range(SIZE):
+			score_vertex = [score_matrix[i][j] for j in indexes]
+			for between_score in range(threshold, between_score_threshold-1 , -1):
+				if min(score_vertex) >= between_score:
+					best_left_indexes.append([i])
+					print (between_score)
+					break
+		return best_left_indexes
 	# optimize both compatability within 10-x group and between 10-x and x
 	def generate_threshold_score_matrix_0():
-		size = len(villagers)
-		threshold_score_matrix = np.zeros((size,size))
-		for i in range(size):
-			for j in range(size):
+		threshold_score_matrix = np.zeros((SIZE,SIZE))
+		for i in range(SIZE):
+			for j in range(SIZE):
 				if i in indexes and j in indexes:
 					threshold_score_matrix[i][j] = threshold
 				elif score_matrix[i][j] >= threshold:
@@ -165,10 +174,9 @@ def find_threshold_best_left(names: list, threshold: int, switch: int, between_s
 		return threshold_score_matrix
 	# optimize only compatability within 10-x group
 	def generate_threshold_score_matrix_1():
-		size = len(villagers)
-		threshold_score_matrix = np.zeros((size,size))
-		for i in range(size):
-			for j in range(size):
+		threshold_score_matrix = np.zeros((SIZE,SIZE))
+		for i in range(SIZE):
+			for j in range(SIZE):
 				if score_matrix[i][j] >= threshold:
 					if not i in indexes or not j in indexes:
 						threshold_score_matrix[i][j] = score_matrix[i][j]
